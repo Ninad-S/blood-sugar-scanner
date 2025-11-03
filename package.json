@@ -2,7 +2,7 @@
   "name": "blood-sugar-scanner",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://Ninad-S.github.io/finger-scan-app",
+  "homepage": "https://Ninad-S.github.io/blood-sugar-scanner",
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
