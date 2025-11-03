@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "/blood-sugar-scanner/static/css/main.2fa935cd.css",
-    "main.js": "/blood-sugar-scanner/static/js/main.c82c15d0.js",
+    "main.js": "/blood-sugar-scanner/static/js/main.dbebd477.js",
     "static/js/453.dd292200.chunk.js": "/blood-sugar-scanner/static/js/453.dd292200.chunk.js",
     "index.html": "/blood-sugar-scanner/index.html",
     "main.2fa935cd.css.map": "/blood-sugar-scanner/static/css/main.2fa935cd.css.map",
-    "main.c82c15d0.js.map": "/blood-sugar-scanner/static/js/main.c82c15d0.js.map",
+    "main.dbebd477.js.map": "/blood-sugar-scanner/static/js/main.dbebd477.js.map",
     "453.dd292200.chunk.js.map": "/blood-sugar-scanner/static/js/453.dd292200.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.2fa935cd.css",
-    "static/js/main.c82c15d0.js"
+    "static/js/main.dbebd477.js"
   ]
 }
