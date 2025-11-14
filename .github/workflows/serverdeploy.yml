@@ -4,20 +4,38 @@ on:
       - main
 
 jobs:
-  run_pull:
-    name: run pull
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: install ssh keys
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install OpenConnect
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openconnect
+
+      - name: Connect to VPN
+        run: |
+          echo "${{ secrets.VPN_PASS }}" | sudo openconnect \
+            --user=${{ secrets.VPN_USER }} \
+            --passwd-on-stdin \
+            ${{ secrets.VPN_SERVER }} \
+            --background
+
+      - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: connect and pull
-        run: ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull"
+      - name: Deploy to server
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "cd /var/www/project && git pull"
 
-      - name: cleanup
-        run: rm -rf ~/.ssh
+      - name: Disconnect VPN
+        run: |
+          sudo killall openconnect || true
