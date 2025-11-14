@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout the repository
+      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
@@ -34,22 +34,21 @@ jobs:
           VPN_PASS: ${{ secrets.VPN_PASS }}
           VPN_SERVER: ${{ secrets.VPN_SERVER }}
 
-      # 4️⃣ Set up SSH key
+      # 4️⃣ Set up SSH key and bypass host key checking
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+          # Disable host key checking
+          echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile=/dev/null\n" >> ~/.ssh/config
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_HOST: ${{ secrets.SSH_HOST }}
 
       # 5️⃣ Deploy: git pull on the server
       - name: Deploy:Git pull
         run: |
-          echo "Running git pull on server..."
-          ssh -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" \
+          ssh "$SSH_USER@$SSH_HOST" \
             "cd '$WORK_DIR' && git reset --hard && git checkout '$MAIN_BRANCH' && git pull"
         env:
           SSH_USER: ${{ secrets.SSH_USER }}
