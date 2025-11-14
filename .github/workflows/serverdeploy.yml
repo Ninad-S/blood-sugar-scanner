@@ -30,4 +30,4 @@ jobs:
       # Deploy to server
       - name: Deploy to server
         run: |
-          scp -r build/* username@192.168.100.60:/var/www/html/
+          scp -r build/* janad@192.168.100.60:/var/www/html/
