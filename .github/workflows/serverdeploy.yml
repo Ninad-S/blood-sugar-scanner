@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
+      # 1️⃣ Checkout the code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Install OpenConnect (VPN)
+      # 2️⃣ Install OpenConnect VPN
       - name: Install OpenConnect
         run: |
           sudo apt-get update
@@ -27,14 +27,14 @@ jobs:
             --user="${VPN_USER}" \
             --passwd-on-stdin \
             "${VPN_SERVER}" &
-          echo "Waiting for VPN to establish..."
+          echo "Waiting for VPN..."
           sleep 15
         env:
           VPN_USER: ${{ secrets.VPN_USER }}
           VPN_PASS: ${{ secrets.VPN_PASS }}
           VPN_SERVER: ${{ secrets.VPN_SERVER }}
 
-      # 4️⃣ Set up SSH key and bypass host key checking
+      # 4️⃣ Setup SSH key + disable host checks
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
@@ -45,10 +45,16 @@ jobs:
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      # 5️⃣ Deploy: git pull on the server
+      # 5️⃣ Deploy: run git pull on remote server
       - name: Deploy:Git pull
         run: |
-          ssh "$SSH_USER@$SSH_HOST" \
+          ssh \
+            -o KexAlgorithms=+diffie-hellman-group1-sha1,diffie-hellman-group14-sha1 \
+            -o HostKeyAlgorithms=+ssh-rsa \
+            -o PubkeyAcceptedKeyTypes=+ssh-rsa \
+            -o StrictHostKeyChecking=no \
+            -o UserKnownHostsFile=/dev/null \
+            "$SSH_USER@$SSH_HOST" \
             "cd '$WORK_DIR' && git reset --hard && git checkout '$MAIN_BRANCH' && git pull"
         env:
           SSH_USER: ${{ secrets.SSH_USER }}
@@ -56,7 +62,7 @@ jobs:
           WORK_DIR: ${{ secrets.WORK_DIR }}
           MAIN_BRANCH: ${{ secrets.MAIN_BRANCH }}
 
-      # 6️⃣ Disconnect VPN
+      # 6️⃣ Disconnect VPN at the end
       - name: Disconnect VPN
         run: |
           sudo pkill openconnect || true
