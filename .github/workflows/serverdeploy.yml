@@ -18,23 +18,36 @@ jobs:
 
       - name: Connect to VPN (Cisco AnyConnect)
         run: |
-          echo "${{ secrets.VPN_PASS }}" | sudo openconnect \
-            --user=${{ secrets.VPN_USER }} \
+          echo "${VPN_PASS}" | sudo openconnect \
+            --user="${VPN_USER}" \
             --passwd-on-stdin \
-            ${{ secrets.VPN_SERVER }} \
+            "${VPN_SERVER}" \
             --background
+        env:
+          VPN_USER: ${{ secrets.VPN_USER }}
+          VPN_PASS: ${{ secrets.VPN_PASS }}
+          VPN_SERVER: ${{ secrets.VPN_SERVER }}
 
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
 
-      - name: Deploy: Git pull on internal server
+      - name: Deploy:Git pull on internal server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull"
+          ssh -o StrictHostKeyChecking=no \
+            "$SSH_USER@$SSH_HOST" \
+            "cd '$WORK_DIR' && git checkout '$MAIN_BRANCH' && git pull"
+        env:
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          WORK_DIR: ${{ secrets.WORK_DIR }}
+          MAIN_BRANCH: ${{ secrets.MAIN_BRANCH }}
 
       - name: Disconnect VPN
         run: |
