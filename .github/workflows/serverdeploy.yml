@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install OpenConnect
@@ -16,7 +16,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y openconnect
 
-      - name: Connect to VPN
+      - name: Connect to VPN (Cisco AnyConnect)
         run: |
           echo "${{ secrets.VPN_PASS }}" | sudo openconnect \
             --user=${{ secrets.VPN_USER }} \
@@ -24,17 +24,17 @@ jobs:
             ${{ secrets.VPN_SERVER }} \
             --background
 
-      - name: Setup SSH key
+      - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
-      - name: Deploy to server
+      - name: Deploy: Git pull on internal server
         run: |
-          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
-            "cd /var/www/project && git pull"
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "cd ${{ secrets.WORK_DIR }} && git checkout ${{ secrets.MAIN_BRANCH }} && git pull"
 
       - name: Disconnect VPN
         run: |
