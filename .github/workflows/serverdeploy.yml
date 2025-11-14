@@ -10,11 +10,10 @@ jobs:
 
     steps:
       - name: install ssh keys
-        # check this thread to understand why it's needed:
-        # https://stackoverflow.com/a/70447517
         run: |
-          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          mkdir -p ~/.ssh
           echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: connect and pull
