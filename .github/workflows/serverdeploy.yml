@@ -1,4 +1,4 @@
-name: Build and Deploy React App to Local Server
+name: Build and Deploy to Local Server
 
 on:
   push:
@@ -6,28 +6,27 @@ on:
       - main
 
 jobs:
-  build-and-deploy:
-    runs-on: self-hosted   # important: runs on your local machine
+  deploy:
+    runs-on: self-hosted
+
     steps:
-      # Checkout code
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      # Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # Build React app
       - name: Build React app
         run: npm run build
 
-      # Deploy to server
-      - name: Deploy to server
+      - name: Deploy build to web root
         run: |
-          scp -r build/* janad@192.168.100.60:/var/www/html/
+          if (!(Test-Path "D:\Github\test\website")) {
+            mkdir D:\Github\test\website
+          }
+          Copy-Item -Path build\* -Destination "D:\Github\test\website" -Recurse -Force
