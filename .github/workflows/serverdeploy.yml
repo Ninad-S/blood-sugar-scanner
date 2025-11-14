@@ -1,3 +1,5 @@
+name: Deploy to Internal Server
+
 on:
   push:
     branches:
@@ -8,40 +10,46 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Install VPN client (OpenConnect)
       - name: Install OpenConnect
         run: |
           sudo apt-get update
           sudo apt-get install -y openconnect
 
+      # 3️⃣ Connect to VPN
       - name: Connect to VPN (Cisco AnyConnect)
         run: |
           echo "${VPN_PASS}" | sudo openconnect \
             --user="${VPN_USER}" \
             --passwd-on-stdin \
-            "${VPN_SERVER}" \
-            --background
+            "${VPN_SERVER}" &
+          echo "Waiting for VPN to establish..."
+          sleep 15  # ensure VPN is fully connected
         env:
           VPN_USER: ${{ secrets.VPN_USER }}
           VPN_PASS: ${{ secrets.VPN_PASS }}
           VPN_SERVER: ${{ secrets.VPN_SERVER }}
 
+      # 4️⃣ Set up SSH key
       - name: Set up SSH key
         run: |
           mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H "$SSH_HOST" >> ~/.ssh/known_hosts
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
 
-      - name: Deploy:Git pull on internal server
+      # 5️⃣ Git pull on internal server
+      - name: Deploy:Git pull
         run: |
-          ssh -o StrictHostKeyChecking=no \
-            "$SSH_USER@$SSH_HOST" \
+          echo "Running SSH command..."
+          ssh -vvv -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" \
             "cd '$WORK_DIR' && git checkout '$MAIN_BRANCH' && git pull"
         env:
           SSH_USER: ${{ secrets.SSH_USER }}
@@ -49,6 +57,7 @@ jobs:
           WORK_DIR: ${{ secrets.WORK_DIR }}
           MAIN_BRANCH: ${{ secrets.MAIN_BRANCH }}
 
+      # 6️⃣ Disconnect VPN
       - name: Disconnect VPN
         run: |
-          sudo killall openconnect || true
+          sudo pkill openconnect || true
