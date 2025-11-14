@@ -1,4 +1,4 @@
-name: Deploy to Internal Server
+name: Server Deployment
 
 on:
   push:
@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Install VPN client (OpenConnect)
+      # 2️⃣ Install OpenConnect (VPN)
       - name: Install OpenConnect
         run: |
           sudo apt-get update
@@ -28,7 +28,7 @@ jobs:
             --passwd-on-stdin \
             "${VPN_SERVER}" &
           echo "Waiting for VPN to establish..."
-          sleep 15  # ensure VPN is fully connected
+          sleep 15
         env:
           VPN_USER: ${{ secrets.VPN_USER }}
           VPN_PASS: ${{ secrets.VPN_PASS }}
@@ -45,12 +45,12 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
 
-      # 5️⃣ Git pull on internal server
+      # 5️⃣ Deploy: git pull on the server
       - name: Deploy:Git pull
         run: |
-          echo "Running SSH command..."
-          ssh -vvv -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" \
-            "cd '$WORK_DIR' && git checkout '$MAIN_BRANCH' && git pull"
+          echo "Running git pull on server..."
+          ssh -o StrictHostKeyChecking=no "$SSH_USER@$SSH_HOST" \
+            "cd '$WORK_DIR' && git reset --hard && git checkout '$MAIN_BRANCH' && git pull"
         env:
           SSH_USER: ${{ secrets.SSH_USER }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
