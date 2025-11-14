@@ -1,50 +1,33 @@
-name: Build and Deploy React App to Server
+name: Build and Deploy React App to Local Server
 
 on:
   push:
     branches:
-      - main  # triggers on every push to main
+      - main
 
 jobs:
   build-and-deploy:
-    runs-on: ubuntu-latest
-
+    runs-on: self-hosted   # important: runs on your local machine
     steps:
-      # Step 1: Checkout repository
-      - name: Checkout code
+      # Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Set up Node.js
+      # Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
 
-      # Step 3: Install dependencies
+      # Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # Step 4: Build React app
+      # Build React app
       - name: Build React app
         run: npm run build
 
-      # Step 5: Copy build files to server using SCP
-      - name: Deploy to Server
-        uses: appleboy/scp-action@v0.1.3
-        with:
-          host: 192.168.100.60
-          username: janad                  # replace with your server username
-          key: ${{ secrets.SSH_PRIVATE_KEY }}  # GitHub secret
-          port: 22
-          source: "build/*"
-          target: "/var/www/html/"
-
-      # Step 6: (Optional) Restart server if needed
-      # - name: Restart server
-      #   uses: appleboy/ssh-action@v0.1.5
-      #   with:
-      #     host: 192.168.100.60
-      #     username: username
-      #     key: ${{ secrets.SERVER_SSH_KEY }}
-      #     script: |
-      #       sudo systemctl restart nginx
+      # Deploy to server
+      - name: Deploy to server
+        run: |
+          scp -r build/* username@192.168.100.60:/var/www/html/
