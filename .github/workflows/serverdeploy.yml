@@ -34,7 +34,7 @@ jobs:
         with:
           host: 192.168.100.60
           username: username                  # replace with your server username
-          key: ${{ secrets.SERVER_SSH_KEY }}  # GitHub secret
+          key: ${{ secrets.SSH_PRIVATE_KEY }}  # GitHub secret
           port: 22
           source: "build/*"
           target: "/var/www/html/"
