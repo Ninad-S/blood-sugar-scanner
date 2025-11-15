@@ -20,7 +20,7 @@ function App() {
   return (
     <div className="App">
       <h1>🩸Diabetes Scanner</h1>
-      <p>Press your finger to scan your blood sugar level.</p>
+      <p>Please Press your finger to scan your blood sugar level.</p>
 
       <button className="scan-btn" onClick={handleScan} disabled={scanning}>
         {scanning ? "Scanning..." : "Press Finger"}
